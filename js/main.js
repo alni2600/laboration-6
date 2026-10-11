@@ -28,11 +28,38 @@ function validateInput(){
     }
 }
 
+//hämtar API
+async function fetchRecipes (searchPhrase) {
+    //skapar en url med sökordet från formuläret
+    const url = `https://dummyjson.com/recipes/search?q=${searchPhrase.value}&limit=1`;
+       
+    //körs först
+    try {
+        //await = väntar på att APIn ska hämtas
+        const response = await fetch(url);
+       //omvandlar till js
+        const data = await response.json();
+        //returnerar i js-format
+        return data;
+    } 
+    //fångar upp eventuella fel
+    catch (error){
+        console.log("Fel vid hämtning av API", error);
+        throw error;
+    }
+}
+
+
+
 //läser in det som skrivs i sökfältet
 form.addEventListener("submit", (event) => {
     //förhindrar att formuläret laddas om
     event.preventDefault();
-    //validerar inmatningen
-    validateInput();
+    //validerar inmatningen, hämtar recept om något fyllts i fältet
+    if (validateInput() === true){
+        fetchRecipes(inputEl);
+    }
+
+
 } )
 

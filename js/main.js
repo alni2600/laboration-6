@@ -1,4 +1,5 @@
 "use strict";
+
 /*
  * Laboration 6 - Receptsökaren
  * Namn: Alexandra Nilsson
@@ -10,6 +11,8 @@ const inputEl = document.getElementById("search");
 const errorEl = document.getElementById("error");
 const errorSection = document.getElementById("message");
 const recipeSection = document.getElementById("recipe");
+//Deklarerar ett objekt som den information vi hämtar från APIn kommer att lagras i
+let recipeObj = {};
 
 //validerar det som matats in i sök-fältet
 // tillräckligt lite kod för att jag inte ska vilja ha separat display-error-funktion - OK
@@ -53,7 +56,7 @@ async function fetchRecipes (searchPhrase) {
 //börjar med att hitta rätt info i arrayen vi får tillbaka och lägger in det i ett objekt
 function createRecipeObj (recipeToBeDisplayed){
 
-    let recipeObj = {
+    recipeObj = {
        //det vi vill ska visas sparas läses in i ny key
         name: recipeToBeDisplayed.recipes[0].name,
         image: recipeToBeDisplayed.recipes[0].image,
@@ -65,13 +68,61 @@ function createRecipeObj (recipeToBeDisplayed){
         ingredients: recipeToBeDisplayed.recipes[0].ingredients,
         instructions: recipeToBeDisplayed.recipes[0].instructions
     }
+    return createRecipeObj;
 }
 
 //ska göra layoten till receptkortet och ta in informationen från recipeObj
 function displayRecipe (){
 
+   // recipeSection elementet som är html-sektionen
+   const articleEl = document.createElement("article");
+   const h3El = document.createElement("h3");
+   const imgEl = document.createElement("img");
+   const divEl = document.createElement("div");
+   const h4IngredientsEl = document.createElement("h4");
+   const h4InstructionEl = document.createElement("h4");
+   const ulEl = document.createElement("ul");
+   const olEl = document.createElement("ol");
+
+   //lägger till <article></article> i <section id="recipe">
+   recipeSection.appendChild(articleEl);
+   //lägger till h3 i <article></article>
+   articleEl.appendChild(h3El);
+   h3El.innerHTML = recipeObj.name;
+
+   //lägger till bilden
+   articleEl.appendChild(imgEl);
+   imgEl.src = "https://cdn.dummyjson.com/recipe-images/1.webp";
+   imgEl.alt = `Serveringsförslag på den lagade rätten ${recipeObj.name}`;
+
+   //lägger till en div i article, ger den en klass och lägger in p+innehåll direkt som innerHTML
+   articleEl.appendChild(divEl);
+   divEl.classList.add("recipe-info");
+   divEl.innerHTML = `<p><strong>Servings:</strong> ${recipeObj.servings}</p>`;
+    divEl.innerHTML += `<p><strong>Prep time::</strong> ${recipeObj.prepTimeMinutes}</p>`;
+    divEl.innerHTML += `<p><strong>Cooking time:</strong> ${recipeObj.cookTimeMinutes}</p>`;
+    divEl.innerHTML += `<p><strong>Difficulty:</strong> ${recipeObj.difficulty}</p>`;
+
+    //skapar rubrik och lägger till text
+    articleEl.appendChild(h4IngredientsEl);
+    h4IngredientsEl.textContent = "Ingredients";
+
+    //lägger till <ul></ul> i article och loopar igenom ingredients-arrayen, skriver ut varje ingrediens i ett li-element
+    articleEl.appendChild(ulEl);
+    for (let i = 0; recipeObj.ingredients[i]; i++){
+        ulEl.innerHTML += `<li>${recipeObj.ingredients[i]}</li>`;
+    }
+
+    //skapar rubrik och lägger till text
+    articleEl.appendChild(h4InstructionEl);
+    h4InstructionEl.textContent = "Instructions";
+
+    //lägger till <ol></ol> i article och loopar igenom instructions-arrayen, skriver ut varje instruktion i ett li-element
+    articleEl.appendChild(olEl);
+    for (let i = 0; recipeObj.instructions[i]; i++){
+        olEl.innerHTML += `<li>${recipeObj.instructions[i]}</li>`;
+    }
 }
-displayRecipe();
 
 
 //läser in det som skrivs i sökfältet. Även detta en async-funktion, annars får jag bara "promise" från fetchRecipes. 
@@ -79,11 +130,13 @@ form.addEventListener("submit", async (event) => {
     //förhindrar att formuläret laddas om
     event.preventDefault();
     //validerar inmatningen, hämtar recept om något fyllts i fältet
+
     if (validateInput() === true){
         // väntar in svaret från fetchRecipes och sparar det i en variabel
         const recipeData = await fetchRecipes(inputEl);
         //skickar med objektet från receptdatabasen som argument i createRecipeObj()
         createRecipeObj(recipeData);
+        displayRecipe();
     }
 
 

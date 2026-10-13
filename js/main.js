@@ -44,6 +44,9 @@ async function fetchRecipes (searchPhrase) {
     } 
     //fångar upp eventuella fel
     catch (error){
+        //skriver ut på sidan så att användaren kan läsa det
+        errorSection.innerHTML = "<p>Det gick inte att hämta sidan. Försök igen senare.</p>"
+        //ger mer information om felet i konsollen
         console.log("Fel vid hämtning av API", error);
         throw error;
     }
@@ -77,7 +80,6 @@ function createRecipeObj (recipeToBeDisplayed){
         ingredients: recipeToBeDisplayed.recipes[0].ingredients,
         instructions: recipeToBeDisplayed.recipes[0].instructions
     }
-    return createRecipeObj;
 }
 
 //ska göra layoten till receptkortet och ta in informationen från recipeObj
@@ -99,9 +101,9 @@ function displayRecipe (){
    articleEl.appendChild(h3El);
    h3El.innerHTML = recipeObj.name;
 
-   //lägger till bilden
+   //lägger till bilden samt sökväg (hämtas från objektet) och alt.beskriving (så gott det går)
    articleEl.appendChild(imgEl);
-   imgEl.src = "https://cdn.dummyjson.com/recipe-images/1.webp";
+   imgEl.src = recipeObj.image;
    imgEl.alt = `Serveringsförslag på den lagade rätten ${recipeObj.name}`;
 
    //lägger till en div i article, ger den en klass och lägger in p+innehåll direkt som innerHTML
@@ -145,11 +147,14 @@ form.addEventListener("submit", async (event) => {
     //förhindrar att formuläret laddas om
     event.preventDefault();
     
-    //tömmer hela sidan på ev. felmeddelanden och recept
+    //tömmer hela sidan på ev. felmeddelanden och tidigare recept. Detta sker alltså på varje "sök"
     emptyPage();
 
     //validerar inmatningen, hämtar recept om något fyllts i fältet
     const recipeData = await fetchRecipes(inputEl);
+
+console.log(recipeData);
+
     //kollar om det har skrivits något i fältet
     if (validateInput() === true ){
        //sedan kontrollerar vi att sökordet matchar ett recept

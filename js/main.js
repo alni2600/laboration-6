@@ -17,9 +17,6 @@ let recipeObj = {};
 //validerar det som matats in i sök-fältet
 // tillräckligt lite kod för att jag inte ska vilja ha separat display-error-funktion - OK
 function validateInput(){
-    //tömmer ev. tidigare felmeddelanden
-    errorEl.innerHTML = "";
-
     //testar om inmatningsfältet är tomt
     if (inputEl.value.trim() === "") {
         //om det är tomt visas ett felmeddelande och funktionen returnerar false
@@ -31,13 +28,12 @@ function validateInput(){
     }
 }
 
-//hämtar API - OK
+//hämtar API 
 async function fetchRecipes (searchPhrase) {
-    //skapar en url med sökordet från formuläret
-    const url = `https://dummyjson.com/recipes/search?q=${searchPhrase.value}&limit=1`;
-
     //körs först
     try {
+        //skapar en url med sökordet från formuläret
+        const url = `https://dummyjson.com/recipes/search?q=${searchPhrase.value}&limit=1`;
         //await = väntar på att APIn ska hämtas
         const response = await fetch(url);
        //omvandlar till js
@@ -52,6 +48,19 @@ async function fetchRecipes (searchPhrase) {
         throw error;
     }
 }
+
+//kollar om sökordet får något matchande recept
+function matchingRecipe (searchPhrase){
+     //om det inte finns något innehåll är det 0 värden i arrayen och vi returnerar false
+     if(searchPhrase.recipes.length === 0){
+        //skriver ut på sidan
+        errorSection.innerHTML = "<p>Det finns inget matchande recept. Prova ett annat sökord</p>"
+        return false;
+     } else {
+        return true;
+     }
+}
+
 
 //börjar med att hitta rätt info i arrayen vi får tillbaka och lägger in det i ett objekt
 function createRecipeObj (recipeToBeDisplayed){
@@ -124,21 +133,31 @@ function displayRecipe (){
     }
 }
 
+//tar bort alla felmeddelanden
+function emptyPage (){
+    recipeSection.innerHTML = "";
+    errorSection.innerHTML = "";
+    errorEl.innerHTML = "";
+}
 
 //läser in det som skrivs i sökfältet. Även detta en async-funktion, annars får jag bara "promise" från fetchRecipes. 
 form.addEventListener("submit", async (event) => {
     //förhindrar att formuläret laddas om
     event.preventDefault();
+    
+    //tömmer hela sidan på ev. felmeddelanden och recept
+    emptyPage();
+
     //validerar inmatningen, hämtar recept om något fyllts i fältet
-
-    if (validateInput() === true){
-        // väntar in svaret från fetchRecipes och sparar det i en variabel
-        const recipeData = await fetchRecipes(inputEl);
-        //skickar med objektet från receptdatabasen som argument i createRecipeObj()
-        createRecipeObj(recipeData);
-        displayRecipe();
-    }
-
-
-} )
+    const recipeData = await fetchRecipes(inputEl);
+    //kollar om det har skrivits något i fältet
+    if (validateInput() === true ){
+       //sedan kontrollerar vi att sökordet matchar ett recept
+        if(matchingRecipe(recipeData) === true){
+            //skapar ett objekt med hämtad data och skriver ut det
+            createRecipeObj(recipeData);
+            displayRecipe();
+        }
+        } 
+    } )
 
